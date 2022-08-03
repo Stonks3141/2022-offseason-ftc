@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode
 
+import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.Servo
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.schedule
 
-private const val EXTENDED = 1.0
-private const val RETRACTED = 0.0
+private const val RETRACTED = 0.8
+private const val EXTENDED = 0.3
 
 class Shooter(hwMap: HardwareMap) {
     private val bumper = hwMap.get(Servo::class.java, "bumper")
