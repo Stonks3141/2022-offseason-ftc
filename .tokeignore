@@ -1,3 +1,13 @@
-*
-!*.gradle
-!TeamCode/src/main/java/org/firstinspires/ftc/teamcode/**
+FtcRobotController
+libs
+doc
+gradle
+.idea
+TeamCode/lib
+TeamCode/src/main/res
+*.xml
+gradlew
+gradlew.bat
+TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/**/*
+TeamCode/src/main/java/org/firstinspires/ftc/teamcode/util/**/*
+TeamCode/src/main/java/org/firstinspires/ftc/teamcode/trajectorysequence/**/*
