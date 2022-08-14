@@ -29,6 +29,8 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner
+import org.firstinspires.ftc.teamcode.util.AxisDirection
+import org.firstinspires.ftc.teamcode.util.BNO055IMUUtil
 
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil
 
@@ -174,7 +176,7 @@ class SampleMecanumDrive(hardwareMap: HardwareMap) :
         return wheelPositions
     }
 
-    override fun getWheelVelocities(): List<Double>? {
+    override fun getWheelVelocities(): List<Double> {
         val wheelVelocities: MutableList<Double> = ArrayList()
         for (motor in motors) {
             wheelVelocities.add(encoderTicksToInches(motor.velocity))
@@ -194,16 +196,16 @@ class SampleMecanumDrive(hardwareMap: HardwareMap) :
         rightFront.power = frontRight
     }
 
-    override val rawExternalHeading: Double
+    public override val rawExternalHeading: Double
         get() = imu.angularOrientation.firstAngle.toDouble()
 
-    override fun getExternalHeadingVelocity(): Double? {
+    override fun getExternalHeadingVelocity(): Double {
         // To work around an SDK bug, use -zRotationRate in place of xRotationRate
         // and -xRotationRate in place of zRotationRate (yRotationRate behaves as
         // expected). This bug does NOT affect orientation.
         //
         // See https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/251 for details.
-        return -imu.angularVelocity.xRotationRate.toDouble()
+        return imu.angularVelocity.zRotationRate.toDouble() // -X TODO?
     }
 
     companion object {
@@ -244,7 +246,6 @@ class SampleMecanumDrive(hardwareMap: HardwareMap) :
             module.bulkCachingMode = LynxModule.BulkCachingMode.AUTO
         }
 
-        // TODO: adjust the names of the following hardware devices to match your configuration
         imu = hardwareMap.get(BNO055IMU::class.java, "imu")
         val parameters = BNO055IMU.Parameters()
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS
@@ -270,12 +271,12 @@ class SampleMecanumDrive(hardwareMap: HardwareMap) :
         // and the placement of the dot/orientation from https://docs.revrobotics.com/rev-control-system/control-system-overview/dimensions#imu-location
         //
         // For example, if +Y in this diagram faces downwards, you would use AxisDirection.NEG_Y.
-        // BNO055IMUUtil.remapZAxis(imu, AxisDirection.NEG_Y);
+        BNO055IMUUtil.remapZAxis(imu, AxisDirection.NEG_X)
         leftFront = hardwareMap.get(DcMotorEx::class.java, "leftFront")
         leftRear = hardwareMap.get(DcMotorEx::class.java, "leftRear")
         rightRear = hardwareMap.get(DcMotorEx::class.java, "rightRear")
         rightFront = hardwareMap.get(DcMotorEx::class.java, "rightFront")
-        motors = listOf(leftFront, leftRear, rightRear, rightFront)
+        this.motors = listOf(leftFront, leftRear, rightRear, rightFront)
         for (motor in motors) {
             val motorConfigurationType = motor.motorType.clone()
             motorConfigurationType.achieveableMaxRPMFraction = 1.0
@@ -283,16 +284,16 @@ class SampleMecanumDrive(hardwareMap: HardwareMap) :
         }
         if (RUN_USING_ENCODER) {
             setMode(DcMotor.RunMode.RUN_USING_ENCODER)
-        }
-        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)
-        if (RUN_USING_ENCODER && MOTOR_VELO_PID != null) {
             setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID)
         }
+        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE)
 
-        // TODO: reverse any motors using DcMotor.setDirection()
+        leftFront.direction = DcMotorSimple.Direction.FORWARD
+        leftRear.direction = DcMotorSimple.Direction.FORWARD
+        rightFront.direction = DcMotorSimple.Direction.REVERSE
+        rightRear.direction = DcMotorSimple.Direction.REVERSE
 
-        // TODO: if desired, use setLocalizer() to change the localization method
-        // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        localizer = TwoWheelTrackingLocalizer(hardwareMap, this)
         trajectorySequenceRunner = TrajectorySequenceRunner(follower, HEADING_PID)
     }
 }
